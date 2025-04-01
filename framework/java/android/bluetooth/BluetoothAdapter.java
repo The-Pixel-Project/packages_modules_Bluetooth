@@ -3467,14 +3467,14 @@ public final class BluetoothAdapter {
 
         BluetoothProfile profileProxy = constructor.apply(context, this);
         ProfileConnection connection = new ProfileConnection(profile, listener, executor);
-
-        synchronized (sProfileLock) {
-            // Synchronize with the binder callback to prevent performing the
-            // ProfileConnection.connect concurrently
-            mProfileConnections.put(profileProxy, connection);
-
-            IBinder binder = getProfile(profile);
-            if (binder != null) {
+        Runnable connectAction =
+                () -> {
+                    synchronized (sProfileLock) {
+                        // Synchronize with the binder callback to prevent performing the
+                        // ProfileConnection.connect concurrently
+                        mProfileConnections.put(profileProxy, connection);
+                        IBinder binder = getProfile(profile);
+                    if (binder != null) {
                 connection.connect(profileProxy, binder);
             }
         }
